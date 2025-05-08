@@ -1,0 +1,124 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "../prisma-client"
+}
+
+datasource db {
+  provider = "mysql"
+  // NOTE: When using mysql or sqlserver, uncomment the @db.Text annotations in model Account below
+  // Further reading:
+  // https://next-auth.js.org/adapters/prisma#create-the-prisma-schema
+  // https://www.prisma.io/docs/reference/api-reference/prisma-schema-reference#string
+  url      = env("DATABASE_URL")
+}
+
+// model Post {
+//     id        Int      @id @default(autoincrement())
+//     name      String
+//     createdAt DateTime @default(now())
+//     updatedAt DateTime @updatedAt
+
+//     createdBy   User   @relation(fields: [createdById], references: [id])
+//     createdById String
+
+//     @@index([name])
+// }
+
+// Necessary for Next auth
+model Account {
+  id                       String  @id @default(cuid())
+  userId                   String
+  type                     String
+  provider                 String
+  providerAccountId        String
+  refresh_token            String? @db.Text
+  access_token             String? // @db.Text
+  expires_at               Int?
+  token_type               String?
+  scope                    String?
+  id_token                 String? // @db.Text
+  session_state            String?
+  user                     User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  refresh_token_expires_in Int?
+
+  @@unique([provider, providerAccountId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+}
+
+// ----------------------------------------------------------------------------
+
+enum Role {
+  KitchenStaff // For kitchen employees (e.g., cooks, chefs)
+  HRManager // For Human Resources
+  RegularUser // Standard users with basic access
+  Guest // Users who are guests or visitors with limited access
+  ProjectCollaborator // Users who collaborate on projects, not full team members
+  Apprentice // People in training, learning or as apprentices
+}
+
+model User {
+  id                 String  @id @default(cuid())
+  name               String
+  email              String  @unique
+  password           String
+  preferredTimeBlock String? // Usual time block for attendance
+  isRegular          Boolean // If they are a regular attendee
+  role               Role // Role (uses the Role enum)
+
+  accounts   Account[]
+  sessions   Session[]
+  // posts              Post[]
+  createdAt  DateTime     @default(now())
+  Attendance Attendance[]
+
+  @@index([email])
+}
+
+model TimeBlock {
+  id         Int          @id @default(autoincrement())
+  name       String       @unique
+  startTime  DateTime
+  endTime    DateTime
+  Attendance Attendance[]
+
+  @@index([startTime]) // Index for faster querying by start time
+}
+
+model ClosingDate {
+  id        Int      @id @default(autoincrement())
+  date      DateTime // The date when the shop is closed
+  reason    String? // Optional reason for closure (e.g., "Holiday", "Maintenance")
+  createdAt DateTime @default(now()) // Automatically tracks when the closure was added
+}
+
+model Attendance {
+  id          String   @id @default(cuid())
+  willCome    Boolean // Will the user come? Based on preferences
+  hasCome     Boolean // Did the user actually come? Updated later
+  date        DateTime // The specific date this record applies to
+  userId      String
+  timeBlockId Int
+
+  user      User      @relation(fields: [userId], references: [id])
+  timeBlock TimeBlock @relation(fields: [timeBlockId], references: [id])
+
+  @@unique([userId, timeBlockId, date]) // Ensures no duplicate records for the same user and time block on the same date
+}
