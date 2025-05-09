@@ -1,7 +1,7 @@
 
 # TODO LIST
 # Progress
-![Progress](https://progress-bar.dev/5/)
+![](https://geps.dev/progress/5)
 
 - [ ] Add shadcn library
 - [ ] Add custom login page
@@ -14,7 +14,7 @@
 
 ## 09/05/2025
 # Progress
-![Progress](https://progress-bar.dev/60/)
+![](https://geps.dev/progress/60)
 
 - [X] Prisma client fix.
   - the fix is to remove the prisma client and change the output in schema.prisma
