@@ -1,6 +1,8 @@
 
 # TODO LIST
-# Progress
+
+## Main goals
+Progress
 ![](https://geps.dev/progress/5)
 
 - [ ] Add shadcn library
@@ -13,7 +15,7 @@
 
 
 ## 09/05/2025
-# Progress
+Progress
 ![](https://geps.dev/progress/60)
 
 - [X] Prisma client fix.
