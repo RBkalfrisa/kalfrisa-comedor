@@ -3,7 +3,7 @@
 
 generator client {
     provider = "prisma-client-js"
-    output   = "../prisma-client"
+    output   = "../src/prisma-client"
 }
 
 datasource db {
@@ -75,19 +75,20 @@ enum Role {
 }
 
 model User {
-    id                 String  @id @default(cuid())
-    name               String
-    email              String  @unique
-    password           String
-    preferredTimeBlock String? // Usual time block for attendance
-    isRegular          Boolean // If they are a regular attendee
-    role               Role // Role (uses the Role enum)
+    id          String  @id @default(cuid())
+    name        String
+    email       String  @unique
+    password    String
+    isRegular   Boolean // If they are a regular attendee
+    role        Role // Role (uses the Role enum)
+    timeBlockId Int?
+    // posts              Post[]
 
     accounts   Account[]
     sessions   Session[]
-    // posts              Post[]
     createdAt  DateTime     @default(now())
     Attendance Attendance[]
+    TimeBlock  TimeBlock?   @relation(fields: [timeBlockId], references: [id])
 
     @@index([email])
 }
@@ -98,6 +99,7 @@ model TimeBlock {
     startTime  DateTime
     endTime    DateTime
     Attendance Attendance[]
+    user       User[] // Users who are assigned to this time block
 
     @@index([startTime]) // Index for faster querying by start time
 }

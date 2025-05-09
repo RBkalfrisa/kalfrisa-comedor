@@ -1,5 +1,10 @@
 import { z } from "zod";
-import { createTRPCRouter, publicProcedure, protectedProcedure } from "@/server/api/trpc";
+import { Role } from "@/prisma-client";
+import {
+  createTRPCRouter,
+  publicProcedure,
+  protectedProcedure,
+} from "@/server/api/trpc";
 import { hash, compare } from "bcryptjs"; // You need bcryptjs for hashing passwords
 import { db } from "@/server/db"; // Adjust the path as per your setup
 import { signIn, signOut } from "next-auth/react"; // For authentication with next-auth
@@ -7,9 +12,17 @@ import { signIn, signOut } from "next-auth/react"; // For authentication with ne
 export const authRouter = createTRPCRouter({
   // Sign up
   signup: publicProcedure
-    .input(z.object({ email: z.string().email(), password: z.string().min(8), name: z.string().min(1) }))
+    .input(
+      z.object({
+        email: z.string().email(),
+        password: z.string().min(8),
+        name: z.string().min(1),
+        isRegular: z.boolean(),
+        role: z.nativeEnum(Role),
+      }),
+    )
     .mutation(async ({ input }) => {
-      const { email, password, name } = input;
+      const { email, password, name, isRegular, role } = input;
 
       // Check if user already exists
       const existingUser = await db.user.findUnique({
@@ -29,6 +42,8 @@ export const authRouter = createTRPCRouter({
           email,
           password: hashedPassword,
           name,
+          isRegular,
+          role,
         },
       });
 
